@@ -6,19 +6,13 @@ import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
 import android.os.AsyncTask;
 import android.os.Bundle;
-import android.os.Environment;
 import android.support.wearable.activity.WearableActivity;
 import android.support.wearable.view.BoxInsetLayout;
-import android.util.Log;
 import android.widget.CompoundButton;
 import android.widget.TextView;
 import android.widget.ToggleButton;
-
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
-import java.io.IOException;
-import java.util.ArrayList;
 import java.util.concurrent.ArrayBlockingQueue;
 
 import edu.dartmouth.cs.watchacccollector.accelerometer.Filter;
@@ -37,6 +31,7 @@ public class MainActivity extends WearableActivity implements SensorEventListene
      * SensorManager
      */
     private SensorManager mSensorManager;
+
     /**
      * Accelerometer Sensor
      */
@@ -63,10 +58,15 @@ public class MainActivity extends WearableActivity implements SensorEventListene
     private CompoundButton accelButton;
 
     private static ArrayBlockingQueue<Double> mAccBuffer;
-    int ACCELEROMETER_BLOCK_CAPACITY = 160;
-    int ACCELEROMETER_BUFFER_CAPACITY = 3200;
+    int ACCELEROMETER_BLOCK_CAPACITY = 160; // Size of processing window
+    int ACCELEROMETER_BUFFER_CAPACITY = 3200; // Size of the blocking buffer
+    // Heuristic: these is lower and up limit for step speed
     int MINIMUM_STEP_TIME_DIFF = 30;
+    // If the difference bwtween the min and max is very small,
+    // then the user might not walking but doing other kind of activities
     double STILLNESS_THRESHOLD = 5;
+
+    // Create a AsyncTask to enable real time processing
     private OnSensorChangedTask mAsyncTask;
 
 
@@ -221,6 +221,7 @@ public class MainActivity extends WearableActivity implements SensorEventListene
                     if (blockSize == ACCELEROMETER_BLOCK_CAPACITY) {
                         blockSize = 0;
 
+                        // Find the minimum/maximum/middle value of current window
                         max = Double.MIN_VALUE;
                         min = Double.MAX_VALUE;
 
@@ -233,6 +234,7 @@ public class MainActivity extends WearableActivity implements SensorEventListene
                             }
                         }
 
+                        // Determine whether the user is walking through this threshold
                         if(max - min<STILLNESS_THRESHOLD)
                             continue;
 
@@ -240,6 +242,8 @@ public class MainActivity extends WearableActivity implements SensorEventListene
                         int last_zero_idx = -ACCELEROMETER_BLOCK_CAPACITY;
 
                         for(int i=1;i<ACCELEROMETER_BLOCK_CAPACITY;i++){
+
+                            // The user's walking speed is withing a range
                             if((accBlock[i]-avg)*(accBlock[i-1]-avg)<0 && i-last_zero_idx>MINIMUM_STEP_TIME_DIFF) {
                                 stepCount++;
                                 last_zero_idx = i;
@@ -247,7 +251,6 @@ public class MainActivity extends WearableActivity implements SensorEventListene
                         }
 
                         publishProgress();
-
                     }
                 } catch (Exception e) {
                     e.printStackTrace();
@@ -268,8 +271,8 @@ public class MainActivity extends WearableActivity implements SensorEventListene
     }
 
     /* (non-Javadoc)
- * @see android.hardware.SensorEventListener#onAccuracyChanged(android.hardware.Sensor, int)
- */
+        * @see android.hardware.SensorEventListener#onAccuracyChanged(android.hardware.Sensor, int)
+    */
     @Override
     public void onAccuracyChanged(Sensor arg0, int arg1) {
 

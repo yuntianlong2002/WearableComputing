@@ -48,18 +48,6 @@ public class Filter {
 		expectedValue = new double[NUM_ACCEL_FIELDS];
 	}
 	
-	/**
-	 * Use this constructor if you want to use butterworth filter
-	 * @param cutoffFrequency
-	 */
-	/*public Filter(double cutoffFrequency) {
-		FILTER_TYPE = FilterType.SMOOTHING;
-		CUTOFF_FREQUENCY = cutoffFrequency;
-		xv = new double[NUM_ACCEL_FIELDS][3];
-		yv = new double[NUM_ACCEL_FIELDS][3];
-		getLPCoefficientsButterworth2Pole(SAMPLE_RATE, CUTOFF_FREQUENCY);
-	}*/
-	
 	
 	/**
 	 * Get FilteredValues
@@ -74,12 +62,7 @@ public class Filter {
 			result[X_INDEX] = getButterworthFilteredValue(accX, X_INDEX);
 			result[Y_INDEX] = getButterworthFilteredValue(accY, Y_INDEX);
 			result[Z_INDEX] = getButterworthFilteredValue(accZ, Z_INDEX);
-		} 
-		/*else if(FILTER_TYPE == FilterType.SMOOTHING) {
-			result[X_INDEX] = getSmoothedValue(accX, X_INDEX);
-			result[Y_INDEX] = getSmoothedValue(accY, Y_INDEX);
-			result[Z_INDEX] = getSmoothedValue(accZ, Z_INDEX);
-		}*/
+		}
 		return result;
 	}
 	
@@ -107,14 +90,6 @@ public class Filter {
 	 * @return
 	 */
 	 public double getSmoothedValue(double sample) {
-		/*if(expectedValue[filterIndex]==INVALID) {
-			expectedValue[filterIndex] = sample;
-			return expectedValue[filterIndex];
-		}
-		else {
-			expectedValue[filterIndex] += (sample-expectedValue[filterIndex])/SMOOTH_FACTOR;
-			return expectedValue[filterIndex];
-		}*/
 		if(prev_smoothed_value < 0){
 			prev_smoothed_value = sample;
 		} else {
@@ -144,9 +119,5 @@ public class Filter {
 		ax[1] = 2 * gain;
 		ax[2] = 1 * gain;
 	}
-	
-	
-	
-	
-	
+
 }

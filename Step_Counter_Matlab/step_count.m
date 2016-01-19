@@ -18,6 +18,7 @@ alpha = 0.1;
 smoothed = zeros(total_size,1);
 smoothed(1) = mag(1);
 window_size = 180;
+steps = 0;
 
 % Loop through the data and exp smooth
 for i=2:total_size
@@ -49,12 +50,15 @@ for j=1:window_size:total_size
     zeroCrossing = diff(aboveZero) == 1;
     zeroCrossingIndex = find(zeroCrossing);
     step_size = size(zeroCrossingIndex,1);
+    steps = steps + step_size;
     plot(t(zeroCrossingIndex+j), ones(step_size,1)*avg_val ,'y*');
     
 end
 % heuristic: these is lower and up limit for step speed
 % also: if the difference bwtween the min and max is very small,
 % then the user might not walking but doing other kind of activities
+% Will reflect above algorithm in the Android app
+disp(steps);
 
 
 
