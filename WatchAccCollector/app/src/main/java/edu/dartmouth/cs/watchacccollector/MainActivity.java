@@ -184,6 +184,16 @@ public class MainActivity extends WearableActivity implements SensorEventListene
 
     @Override
     public void onDestroy() {
+        if(mAsyncTask!=null){
+            mAsyncTask.cancel(true);
+            try {
+                Thread.sleep(100);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+        }
+        if(mSensorManager!=null)
+            stopAccelerometer();
         super.onDestroy();
 
         try{
@@ -191,6 +201,25 @@ public class MainActivity extends WearableActivity implements SensorEventListene
         }catch (Exception ex)
         {
         }
+    }
+
+    @Override
+    protected void onResume() {
+        //registerReceiver(mMessageUpdateReceiver, mMessageIntentFilter);
+
+        super.onResume();
+
+        accelButton = (ToggleButton) findViewById(R.id.StartButton);
+        accelButton.setChecked(isAccelRunning);
+    }
+
+    @Override
+    protected void onPause() {
+        if(mSensorManager!=null)
+            stopAccelerometer();
+        super.onDestroy();
+        //unregisterReceiver(mMessageUpdateReceiver);
+        super.onPause();
     }
 
     @Override
@@ -228,9 +257,9 @@ public class MainActivity extends WearableActivity implements SensorEventListene
         //Set up filter
         double SMOOTH_FACTOR = 0.1;
         filter = new Filter(SMOOTH_FACTOR);
-        stepCount = 0;
-        calCount = 0;
-        distCount = 0;
+        //stepCount = 0;
+        //calCount = 0;
+        //distCount = 0;
     }
 
     /**
@@ -242,6 +271,9 @@ public class MainActivity extends WearableActivity implements SensorEventListene
 
         //Free filter and step detector
         filter = null;
+
+        accelButton = (ToggleButton) findViewById(R.id.StartButton);
+        accelButton.setChecked(isAccelRunning);
     }
 
     @Override
