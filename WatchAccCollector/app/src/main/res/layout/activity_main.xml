@@ -14,26 +14,101 @@
         android:padding="10dp"
         app:layout_box="all">
 
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="84dp"
-            android:text="@string/accel"
-            android:id="@+id/textView"
-            android:layout_gravity="top|center"
-            android:gravity="center_vertical" />
-
-        <ToggleButton
-            android:id="@+id/StartButton"
-            android:layout_width="156dp"
+        <LinearLayout
+            android:orientation="vertical"
+            android:layout_width="fill_parent"
             android:layout_height="wrap_content"
-            android:layout_gravity="center" />
+            android:layout_gravity="center_horizontal|bottom">
 
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="49dp"
-            android:text="@string/steps"
-            android:id="@+id/stepCount"
-            android:layout_gravity="center_horizontal|bottom" />
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/steps"
+                android:id="@+id/stepCount"
+                android:layout_gravity="center_horizontal" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Cal"
+                android:id="@+id/calCount"
+                android:layout_gravity="center_horizontal|bottom" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Dist"
+                android:id="@+id/distCount"
+                android:layout_gravity="center_horizontal|bottom" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:orientation="vertical"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+
+            <ToggleButton
+                android:id="@+id/StartButton"
+                android:layout_width="56dp"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_horizontal|top" />
+
+        </LinearLayout>
+
+        <LinearLayout
+            android:orientation="vertical"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center">
+
+            <LinearLayout
+                android:orientation="horizontal"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center">
+
+                <SeekBar
+                    android:layout_width="111dp"
+                    android:layout_height="wrap_content"
+                    android:id="@+id/weight"
+                    android:layout_gravity="center_vertical|bottom"
+                    android:max="50"
+                    android:progress="10"
+                    android:indeterminate="false" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Weight"
+                    android:id="@+id/weightInput"
+                    android:layout_gravity="center_horizontal|right" />
+            </LinearLayout>
+
+            <LinearLayout
+                android:orientation="horizontal"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_gravity="center">
+
+                <SeekBar
+                    android:layout_width="111dp"
+                    android:layout_height="wrap_content"
+                    android:id="@+id/height"
+                    android:progress="45"
+                    android:layout_gravity="center|left"
+                    android:longClickable="false"
+                    android:max="70"
+                    android:indeterminate="false" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Height"
+                    android:id="@+id/heightInput"
+                    android:layout_gravity="center|right" />
+            </LinearLayout>
+        </LinearLayout>
+
     </FrameLayout>
 
 
