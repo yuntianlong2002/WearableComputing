@@ -45,13 +45,22 @@
         <LinearLayout
             android:orientation="vertical"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content">
+            android:layout_height="78dp">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textAppearance="?android:attr/textAppearanceSmall"
+                android:id="@+id/activity_type"
+                android:layout_gravity="center_horizontal|top"
+                android:text="Standing" />
 
             <ToggleButton
-                android:id="@+id/StartButton"
+                android:id="@+id/MonitorButton"
                 android:layout_width="56dp"
                 android:layout_height="wrap_content"
-                android:layout_gravity="center_horizontal|top" />
+                android:layout_gravity="center_horizontal|top"
+                android:checked="false" />
 
         </LinearLayout>
 

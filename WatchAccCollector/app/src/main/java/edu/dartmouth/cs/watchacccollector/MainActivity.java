@@ -14,7 +14,10 @@ import android.widget.TextView;
 import android.widget.ToggleButton;
 import java.io.File;
 import java.io.FileOutputStream;
+import java.util.ArrayList;
 import java.util.concurrent.ArrayBlockingQueue;
+
+import com.meapsoft.FFT;
 
 import edu.dartmouth.cs.watchacccollector.accelerometer.Filter;
 
@@ -73,16 +76,18 @@ public class MainActivity extends WearableActivity implements SensorEventListene
     private TextView stepsView;
     private TextView calView;
     private TextView distView;
+    private TextView activityView;
     private SeekBar seekBar_height;
     private SeekBar seekBar_weight;
     private TextView heightPrint;
     private TextView weightPrint;
 
+    String activitytype="";
+
     private CompoundButton accelButton;
 
     private static ArrayBlockingQueue<Tuple<Long, Double> > mAccBuffer;
-    int ACCELEROMETER_BLOCK_CAPACITY = 160; // Size of processing window
-    int ACCELEROMETER_BUFFER_CAPACITY = 3200; // Size of the blocking buffer
+
     // Heuristic: these is lower and up limit for step speed
     int MINIMUM_STEP_TIME_DIFF = 30;
     // If the difference bwtween the min and max is very small,
@@ -99,7 +104,7 @@ public class MainActivity extends WearableActivity implements SensorEventListene
         setContentView(R.layout.activity_main);
         setAmbientEnabled();
 
-        mAccBuffer = new ArrayBlockingQueue<>(ACCELEROMETER_BUFFER_CAPACITY);
+        mAccBuffer = new ArrayBlockingQueue<>(Globals.ACCELEROMETER_BUFFER_CAPACITY);
 
         mContainerView = (BoxInsetLayout) findViewById(R.id.container);
 
@@ -110,6 +115,7 @@ public class MainActivity extends WearableActivity implements SensorEventListene
         mAsyncTask.execute();
 
         stepsView = (TextView)findViewById(R.id.stepCount);
+        activityView = (TextView)findViewById(R.id.activity_type);
         calView = (TextView)findViewById(R.id.calCount);
         distView = (TextView)findViewById(R.id.distCount);
         seekBar_height = (SeekBar) findViewById(R.id.height);
@@ -163,7 +169,7 @@ public class MainActivity extends WearableActivity implements SensorEventListene
 
 
         //Set the buttons and the text accordingly
-        accelButton = (ToggleButton) findViewById(R.id.StartButton);
+        accelButton = (ToggleButton) findViewById(R.id.MonitorButton);
         accelButton.setChecked(isAccelRunning);
         accelButton.setOnCheckedChangeListener(
                 new CompoundButton.OnCheckedChangeListener() {
@@ -209,7 +215,7 @@ public class MainActivity extends WearableActivity implements SensorEventListene
 
         super.onResume();
 
-        accelButton = (ToggleButton) findViewById(R.id.StartButton);
+        accelButton = (ToggleButton) findViewById(R.id.MonitorButton);
         accelButton.setChecked(isAccelRunning);
     }
 
@@ -272,7 +278,7 @@ public class MainActivity extends WearableActivity implements SensorEventListene
         //Free filter and step detector
         filter = null;
 
-        accelButton = (ToggleButton) findViewById(R.id.StartButton);
+        accelButton = (ToggleButton) findViewById(R.id.MonitorButton);
         accelButton.setChecked(isAccelRunning);
     }
 
@@ -310,8 +316,16 @@ public class MainActivity extends WearableActivity implements SensorEventListene
         @Override
         protected String doInBackground(String... aurl) {
 
+            // For the step counting
+            int blockSize_step = 0;
+            double[] stepBlock = new double[Globals.ACCELEROMETER_STEP_CAPACITY];
+
+            // For activity recog
             int blockSize = 0;
-            double[] accBlock = new double[ACCELEROMETER_BLOCK_CAPACITY];
+            FFT fft = new FFT(Globals.ACCELEROMETER_BLOCK_CAPACITY);
+            double[] accBlock = new double[Globals.ACCELEROMETER_BLOCK_CAPACITY];
+            double[] re = accBlock;
+            double[] im = new double[Globals.ACCELEROMETER_BLOCK_CAPACITY];
 
             double max = Double.MIN_VALUE;
             double min = Double.MAX_VALUE;
@@ -329,25 +343,59 @@ public class MainActivity extends WearableActivity implements SensorEventListene
 
                     // Dumping buffer
                     Tuple<Long,Double> curr = mAccBuffer.take();
-                    if(blockSize==0){
+                    if(blockSize_step==0){
                         start_timestamp = curr.timestamp.longValue();
                     }
+
+                    stepBlock[blockSize_step++] = curr.value.doubleValue();
                     accBlock[blockSize++] = curr.value.doubleValue();
 
+                    if (blockSize == Globals.ACCELEROMETER_BLOCK_CAPACITY) {
+                        blockSize = 0;
+                        max = .0;
+                        for (double val : accBlock) {
+                            if (max < val) {
+                                max = val;
+                            }
+                        }
 
+                        fft.fft(re, im);
 
-                    if (blockSize == ACCELEROMETER_BLOCK_CAPACITY) {
+                        ArrayList<Double> featVect= new ArrayList<Double>();
+                        for (int i = 0; i < re.length; i++) {
+                            double mag = Math.sqrt(re[i] * re[i] + im[i]
+                                    * im[i]);
+                            //inst.setValue(i, mag);
+                            featVect.add(mag);
+                            im[i] = .0; // Clear the field
+                        }
+                        featVect.add(max);
+                        Object[] array = (Object[]) featVect.toArray();
+                        double rv=0;
+                        rv= WekaClassifier.classify(array);
+
+                        if(rv<0.2)
+                            activitytype="Standing";
+                        else if(rv<1.2)
+                            activitytype="Walking";
+                        else
+                            activitytype="Running";
+
+                        publishProgress();
+                    }
+
+                    if (blockSize_step == Globals.ACCELEROMETER_STEP_CAPACITY) {
                         end_timestamp = curr.timestamp.longValue();
                         long time_diff_milli = end_timestamp - start_timestamp;
 
 
-                        blockSize = 0;
+                        blockSize_step = 0;
 
                         // Find the minimum/maximum/middle value of current window
                         max = Double.MIN_VALUE;
                         min = Double.MAX_VALUE;
 
-                        for (double val : accBlock) {
+                        for (double val : stepBlock) {
                             if (max < val) {
                                 max = val;
                             }
@@ -358,16 +406,16 @@ public class MainActivity extends WearableActivity implements SensorEventListene
 
 
                         double avg = (max+min)/2.0;
-                        int last_zero_idx = -ACCELEROMETER_BLOCK_CAPACITY;
+                        int last_zero_idx = -Globals.ACCELEROMETER_STEP_CAPACITY;
 
                         int steps_this_window = 0;
 
                         // Determine whether the user is walking through this threshold
                         if(max - min>STILLNESS_THRESHOLD){
-                            for (int i = 1; i < ACCELEROMETER_BLOCK_CAPACITY; i++) {
+                            for (int i = 1; i < Globals.ACCELEROMETER_STEP_CAPACITY; i++) {
 
                                 // The user's walking speed is withing a range
-                                if ((accBlock[i] - avg) * (accBlock[i - 1] - avg) < 0 && i - last_zero_idx > MINIMUM_STEP_TIME_DIFF) {
+                                if ((stepBlock[i] - avg) * (stepBlock[i - 1] - avg) < 0 && i - last_zero_idx > MINIMUM_STEP_TIME_DIFF) {
                                     steps_this_window++;
                                     last_zero_idx = i;
                                 }
@@ -445,5 +493,6 @@ public class MainActivity extends WearableActivity implements SensorEventListene
         stepsView.setText("Steps=" + stepCount);
         calView.setText("Cal=" + (int)calCount);
         distView.setText("Dist=" + (int)distCount + " m");
+        activityView.setText(activitytype);
     }
 }
