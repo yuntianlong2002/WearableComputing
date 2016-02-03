@@ -16,7 +16,7 @@
 
 package com.example.android.wearable.jumpingjack;
 
-import com.example.android.wearable.jumpingjack.fragments.CounterFragment;
+import com.example.android.wearable.jumpingjack.fragments.PSMFragment;
 import com.example.android.wearable.jumpingjack.fragments.SettingsFragment;
 
 import android.app.Activity;
@@ -72,7 +72,7 @@ public class MainActivity extends Activity
     private boolean mUp = false;
     private int mJumpCounter = 0;
     private ViewPager mPager;
-    private CounterFragment mCounterPage;
+    private PSMFragment mCounterPage;
     private SettingsFragment mSettingPage;
     private ImageView mSecondIndicator;
     private ImageView mFirstIndicator;
@@ -98,7 +98,7 @@ public class MainActivity extends Activity
         mFirstIndicator = (ImageView) findViewById(R.id.indicator_0);
         mSecondIndicator = (ImageView) findViewById(R.id.indicator_1);
         final PagerAdapter adapter = new PagerAdapter(getFragmentManager());
-        mCounterPage = new CounterFragment();
+        mCounterPage = new PSMFragment();
         mSettingPage = new SettingsFragment();
         adapter.addFragment(mCounterPage);
         adapter.addFragment(mSettingPage);
