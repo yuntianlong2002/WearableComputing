@@ -23,12 +23,18 @@
             android:id="@+id/chart"
             android:layout_width="wrap_content"
             android:layout_height="80dp"
-            android:layout_alignParentTop="true" />
+            android:layout_alignParentTop="true"
+        android:layout_marginLeft="20dp"
+        android:layout_marginRight="20dp"
+        android:layout_marginTop="20dp" />
 
     <ListView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:id="@+id/listView"
-        android:layout_below="@+id/chart" />
+        android:layout_below="@+id/chart"
+        android:layout_marginLeft="30dp"
+        android:layout_marginRight="30dp"
+        android:layout_marginBottom="20dp" />
 
 </RelativeLayout>
