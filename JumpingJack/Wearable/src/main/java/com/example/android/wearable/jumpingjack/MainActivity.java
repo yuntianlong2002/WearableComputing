@@ -26,12 +26,17 @@ import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
 import android.os.Bundle;
+import android.os.Environment;
 import android.os.Handler;
 import android.support.v4.view.ViewPager;
 import android.util.Log;
 import android.view.WindowManager;
 import android.widget.ImageView;
 
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.util.Timer;
 import java.util.TimerTask;
 
@@ -80,6 +85,9 @@ public class MainActivity extends Activity
     private TimerTask mTimerTask;
     private Handler mHandler;
 
+    private File mRawAccFile;
+    private FileOutputStream mRawAccOutputStream;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -91,6 +99,8 @@ public class MainActivity extends Activity
         renewTimer();
         mSensorManager = (SensorManager) getSystemService(Context.SENSOR_SERVICE);
         mSensor = mSensorManager.getDefaultSensor(Sensor.TYPE_GRAVITY);
+
+
     }
 
     private void setupViews() {
