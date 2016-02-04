@@ -5,8 +5,6 @@ import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
 
-import com.example.android.wearable.jumpingjack.fragments.PSMFragment;
-
 import java.util.Calendar;
 
 
